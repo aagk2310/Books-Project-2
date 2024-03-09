@@ -1,6 +1,9 @@
 package com.sismics.books.core.model.jpa;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,7 +19,7 @@ import com.google.common.base.Objects;
  */
 @Entity
 @Table(name = "T_BOOK")
-public class Book {
+public class Book implements BookSubject{
     /**
      * Book ID.
      */
@@ -29,13 +32,21 @@ public class Book {
      */
     @Column(name = "BOK_TITLE_C", nullable = false, length = 255)
     private String title;
-    
+
+    /**
+     * Genre
+     */
+    private List<Genre> genres;
+
+
     /**
      * Subtitle.
      */
     @Column(name = "BOK_SUBTITLE_C", length = 255)
     private String subtitle;
-    
+
+
+
     /**
      * Author.
      */
@@ -71,6 +82,16 @@ public class Book {
      */
     @Column(name = "BOK_LANGUAGE_C", length = 2)
     private String language;
+
+    /**
+     * Observers
+     */
+    private List<RatingObserver> observers = new ArrayList<>();
+
+    /**
+     * Ratings
+     */
+    private List<Rating> ratings = new ArrayList<>();
     
     /**
      * Publication date.
@@ -264,5 +285,41 @@ public class Book {
                 .add("id", id)
                 .add("title", title)
                 .toString();
+    }
+
+    public List<Genre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(List<Genre> genres) {
+        this.genres = genres;
+    }
+
+    @Override
+    public void registerObserver(RatingObserver observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(RatingObserver observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for (RatingObserver observer : observers) {
+            observer.updateRating(ratings.get(ratings.size() - 1)); // Notify with the latest rating
+        }
+
+    }
+    public void addRating(User user, float rating) {
+        Rating newRating = new Rating(user, rating);
+        ratings.add(newRating);
+        notifyObservers(); // Notify observers about the new rating
+    }
+
+    // Getters and setters for ratings
+    public List<Rating> getRatings() {
+        return ratings;
     }
 }
